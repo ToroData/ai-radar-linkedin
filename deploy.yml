@@ -1,0 +1,66 @@
+- name: Deploy AI Radar to EC2 with Conda env
+  hosts: ec2
+  become: yes
+
+  vars:
+    conda_dir: /home/ec2-user/miniconda
+    project_dir: /home/ec2-user/ai-radar
+
+  tasks:
+    - name: Instalar dependencias del sistema
+      yum:
+        name:
+          - git
+          - wget
+          - unzip
+        state: present
+
+    - name: Descargar Miniconda
+      become_user: ec2-user
+      get_url:
+        url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        dest: /home/ec2-user/miniconda.sh
+        mode: '0755'
+
+    - name: Instalar Miniconda
+      become_user: ec2-user
+      shell: |
+        bash /home/ec2-user/miniconda.sh -b -p {{ conda_dir }}
+      args:
+        creates: "{{ conda_dir }}"
+
+    - name: Subir proyecto (incluye environment.yml)
+      copy:
+        src: ../  # ajusta según tu estructura local
+        dest: "{{ project_dir }}"
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Crear entorno conda desde environment.yml
+      become_user: ec2-user
+      shell: |
+        eval "$({{ conda_dir }}/bin/conda shell.bash hook)"
+        conda env create -f {{ project_dir }}/environment.yml
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "{{ conda_dir }}/bin:{{ ansible_env.PATH }}"
+
+    - name: Crear cronjob semanal - General
+      cron:
+        name: "Run AI Radar Weekly - General"
+        user: ec2-user
+        minute: "0"
+        hour: "9"
+        weekday: "1"
+        job: "cd {{ project_dir }} && eval \"$({{ conda_dir }}/bin/conda shell.bash hook)\" && conda activate ai-radar && python lambda_function.py --topic general"
+
+    - name: Crear cronjob semanal - Research
+      cron:
+        name: "Run AI Radar Weekly - Research"
+        user: ec2-user
+        minute: "30"
+        hour: "9"
+        weekday: "1"
+        job: "cd {{ project_dir }} && eval \"$({{ conda_dir }}/bin/conda shell.bash hook)\" && conda activate ai-radar && python lambda_function.py --topic research"

@@ -25,6 +25,7 @@ from src.generator import load_prompt, generate_article, load_static_text
 from langchain_openai import ChatOpenAI
 from tavily import TavilyClient
 from datetime import datetime
+import argparse
 
 
 def run(payload: dict):
@@ -67,7 +68,8 @@ def run(payload: dict):
     upload_to_notion(final_markdown, title_prefix=title)
 
 if __name__ == "__main__":
-    simulated_payload = {
-        "topic": "research"
-    }
-    run(simulated_payload)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--topic", choices=["general", "research"], default="general")
+    args = parser.parse_args()
+
+    run({"topic": args.topic})
