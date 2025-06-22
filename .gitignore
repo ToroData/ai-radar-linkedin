@@ -39,3 +39,4 @@ terraform.tfstate.backup
 */.terraform.tfstate.lock.info
 ansible/hosts.ini
 *.ipynb
+config.env.local
