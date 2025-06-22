@@ -40,3 +40,4 @@ terraform.tfstate.backup
 ansible/hosts.ini
 *.ipynb
 config.env.local
+Makefile

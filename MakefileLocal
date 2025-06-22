@@ -1,0 +1,50 @@
+TERRAFORM_DIR=terraform
+ANSIBLE_DIR=ansible
+INVENTORY_FILE=$(ANSIBLE_DIR)/hosts.ini
+KEY_PATH=~/.ssh/ai-linkedin.pem
+CONFIG_FILE=config.env
+REMOTE_DIR=/home/ubuntu
+
+.PHONY: all deploy destroy plan update-inventory apply ansible ping cleanup full-deploy generate-config upload-config
+
+all: deploy
+
+deploy: apply update-inventory
+
+plan:
+	cd $(TERRAFORM_DIR) && terraform init && terraform plan
+
+apply:
+	cd $(TERRAFORM_DIR) && terraform init && terraform apply -auto-approve
+
+ansible:
+	cd $(ANSIBLE_DIR) && ansible-playbook -i hosts.ini site.yml -vvv
+
+update-inventory:
+	@echo "Updating Ansible inventory..."
+	@python3 update_inventory.py
+
+destroy:
+	cd $(TERRAFORM_DIR) && terraform destroy -auto-approve
+
+cleanup:
+	rm -f $(INVENTORY_FILE)
+
+#generate-config:
+
+#upload-config:
+#scp -i $(KEY_PATH) $(CONFIG_FILE) ubuntu@$(shell terraform -chdir=$(TERRAFORM_DIR) output -raw ec2_public_ip):$(REMOTE_DIR)/$(CONFIG_FILE)
+
+# Full pipeline
+full-deploy:
+	@echo "🚀 [1/5] Deploying infrastructure (Terraform + inventory)..."
+	@$(MAKE) deploy
+	@echo "🔐 [2/5] Generating config.env..."
+	@$(MAKE) generate-config
+	@echo "📤 [3/5] Uploading config.env..."
+	@$(MAKE) upload-config
+	@echo "🔧 [4/5] Running Ansible Playbook..."
+	@$(MAKE) ansible || { echo '❌ Ansible failed. Skipping destroy.'; exit 1; }
+	@echo "💣 [5/5] Destroying infrastructure..."
+	@$(MAKE) destroy
+	@echo "✅ Full deployment pipeline completed."
