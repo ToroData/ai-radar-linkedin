@@ -1,0 +1,79 @@
+- name: Deploy AI Radar to EC2 with system Python 3.12
+  hosts: ec2
+  become: yes
+
+  vars:
+    conda_dir: /home/ubuntu/miniconda
+    project_dir: /home/ubuntu/ai-radar
+
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name:
+          - git
+          - wget
+          - unzip
+          - python3-venv
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Git installation
+      become: yes
+      apt:
+        name: git
+        state: present
+
+    - name: Clone AI Radar repository
+      become: yes
+      become_user: ubuntu
+      git:
+        repo: https://github.com/ToroData/ai-radar-linkedin.git
+        dest: "{{ project_dir }}"
+        version: main
+        force: yes
+
+
+    - name: Create virtual environment
+      become_user: ubuntu
+      shell: |
+        python3 -m venv /home/ubuntu/venv-ai
+        /home/ubuntu/venv-ai/bin/pip install --upgrade pip
+        /home/ubuntu/venv-ai/bin/pip install -r {{ project_dir }}/requirements.txt
+      args:
+        executable: /bin/bash
+
+
+    - name: Run AI Radar - General
+      shell: >
+        /home/ubuntu/venv-ai/bin/python {{ project_dir }}/lambda_function.py --topic general
+      become_user: ubuntu
+      args:
+        executable: /bin/bash
+      register: radar_output_general
+
+
+    - name: Verify that the Notion URL was generated - General
+      assert:
+        that:
+          - "'Notion URL:' in radar_output_general.stdout"
+          - "'https://www.notion.so/' in radar_output_general.stdout"
+        fail_msg: "No Notion URL found in output for General topic"
+        success_msg: "Notion URL generated successfully for General"
+
+    - name: Run AI Radar - Research
+      shell: >
+        /home/ubuntu/venv-ai/bin/python {{ project_dir }}/lambda_function.py --topic research
+      become_user: ubuntu
+      args:
+        executable: /bin/bash
+      register: radar_output_research
+
+
+    - name: Verify that the Notion URL was generated - Research
+      assert:
+        that:
+          - "'Notion URL:' in radar_output_research.stdout"
+          - "'https://www.notion.so/' in radar_output_research.stdout"
+        fail_msg: "No Notion URL found in output for Research topic"
+        success_msg: "Notion URL generated successfully for Research"

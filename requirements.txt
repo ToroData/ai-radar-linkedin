@@ -18,3 +18,5 @@ langgraph==0.2.19
 langgraph-checkpoint==1.0.12
 langsmith==0.1.147
 dotenv==0.9.9
+tf-keras==2.19.0
+
