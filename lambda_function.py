@@ -62,7 +62,8 @@ def run(payload: dict):
 
     material, ref_list, updated_sections = format_articles_for_prompt(all_articles)
     template = load_prompt(prompt_path)
-    footer = load_static_text("prompts/footer.md")
+    footer_path = os.path.join(BASE_DIR, "prompts", "footer.md")
+    footer = load_static_text(footer_path)
     article = generate_article(llm, template, material, title, datetime.now().strftime("%Y-%m-%d"))
 
     references = build_references_section(ref_list)
