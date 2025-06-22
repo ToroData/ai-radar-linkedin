@@ -6,11 +6,9 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 from notion_client import Client
+from src.config import NOTION_API_KEY, NOTION_DATABASE_ID
 
-load_dotenv("config.env") 
-
-notion = Client(auth=os.getenv("NOTION_API_KEY"))
-NOTION_DATABASE_ID =os.getenv("NOTION_DATABASE_ID")
+notion = Client(auth=NOTION_API_KEY)
 
 def markdown_to_blocks(markdown_text, chunk_limit=1800):
     """
