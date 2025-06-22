@@ -31,17 +31,39 @@
 
     - name: Subir proyecto (incluye environment.yml)
       copy:
-        src: ../  # ajusta según tu estructura local
+        src: ../
         dest: "{{ project_dir }}"
         owner: ec2-user
         group: ec2-user
         mode: '0755'
 
+    - name: Borrar entorno Conda si ya existe
+      become_user: ec2-user
+      shell: |
+        source ~/miniconda/etc/profile.d/conda.sh
+        conda deactivate || true
+        conda env remove -n ai-linkedin -y || true
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "{{ conda_dir }}/bin:{{ ansible_env.PATH }}"
+
     - name: Crear entorno conda desde environment.yml
       become_user: ec2-user
       shell: |
-        eval "$({{ conda_dir }}/bin/conda shell.bash hook)"
+        source ~/miniconda/etc/profile.d/conda.sh
         conda env create -f {{ project_dir }}/environment.yml
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "{{ conda_dir }}/bin:{{ ansible_env.PATH }}"
+
+    - name: Activar entorno y instalar TensorFlow manualmente
+      become_user: ec2-user
+      shell: |
+        source ~/miniconda/etc/profile.d/conda.sh
+        conda activate ai-linkedin
+        pip install tensorflow
       args:
         executable: /bin/bash
       environment:

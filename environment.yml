@@ -184,10 +184,6 @@ dependencies:
       - sqlalchemy==2.0.41
       - tavily-python==0.4.0
       - tenacity==8.5.0
-      - tensorboard==2.19.0
-      - tensorboard-data-server==0.7.2
-      - tensorflow==2.19.0
-      - tensorflow-io-gcs-filesystem==0.37.1
       - termcolor==3.1.0
       - terminado==0.18.1
       - tf-keras==2.19.0
@@ -211,4 +207,4 @@ dependencies:
       - widgetsnbextension==4.0.14
       - wrapt==1.17.2
       - yarl==1.20.1
-prefix: /home/ricardraigada/miniconda3/envs/udacity-agent
+
