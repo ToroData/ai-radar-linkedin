@@ -26,6 +26,7 @@ from langchain_openai import ChatOpenAI
 from tavily import TavilyClient
 from datetime import datetime
 import argparse
+import os
 
 
 def run(payload: dict):
@@ -33,14 +34,15 @@ def run(payload: dict):
 
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
     tavily = TavilyClient(api_key=TAVILY_API_KEY)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     if topic == "general":
         queries = get_ai_general_queries()
-        prompt_path = "prompts/ai_general_prompt.md"
+        prompt_path = os.path.join(BASE_DIR, "prompts", "ai_general_prompt.md")
         title = "International AI Policy and Investment Overview"
     elif topic == "research":
         queries = get_ai_research_queries()
-        prompt_path = "prompts/ai_research_prompt.md"
+        prompt_path = os.path.join(BASE_DIR, "prompts", "ai_research_prompt.md")
         title = "Emerging Trends in AI Research and Algorithms"
     else:
         raise ValueError(f"Unsupported topic '{topic}'.")
