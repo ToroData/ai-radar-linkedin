@@ -33,6 +33,13 @@
         version: main
         force: yes
 
+    - name: Move config.env to project directory on remote
+      become: yes
+      become_user: ubuntu
+      ansible.builtin.command: mv /home/ubuntu/config.env {{ project_dir }}/config.env
+      args:
+        removes: /home/ubuntu/config.env
+
 
     - name: Create virtual environment
       become_user: ubuntu
