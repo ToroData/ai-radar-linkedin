@@ -5,7 +5,7 @@ This file loads environment variables for API keys and checks their presence.
 import os
 from dotenv import load_dotenv
 
-load_dotenv('config.env')
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../config.env"))
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
